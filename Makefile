@@ -102,4 +102,4 @@ re: clean database ## Drops all the tables and recreates the database
 
 .PHONY: redo
 redo: getpass ## Redoes the full module without confirmations (monthly tables kept)
-	@$(MAKE) --no-print-directory AUTO=1 re ex01 ex02 ex03
+	@$(MAKE) --no-print-directory AUTO=1 re
