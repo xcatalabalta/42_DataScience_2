@@ -29,8 +29,10 @@ YES  := $(if $(AUTO),--yes)
 KEEP := $(if $(AUTO),--keep)
 
 .PHONY: ex00
-ex00: database ## Regenerates the project from scratch ready to inspect
-	@echo "Please open DBeaver to inspect the database for this exercise."
+ex00: ## Regenerates the project from scratch ready to inspect
+	@echo "Generating pie chart"
+	@chmod +x ex00/pie.py
+	@./ex00/pie.py
 
 .PHONY: ex01
 ex01: ## Join all the data_202*_*** tables together in a table called "customers"
