@@ -51,7 +51,7 @@ ex03: ## Combine the customers tables with items in the customers table
 database: getpass ## Charges the full database (default target)
 	@./utils/automatic_table.py
 	@./utils/items_table.py
-	@./utils/customer_table.py
+	@./utils/customers_table.py
 	@./utils/remove_duplicates.py
 	@./utils/fusion.py
 
