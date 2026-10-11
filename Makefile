@@ -51,9 +51,9 @@ ex03: ## Combine the customers tables with items in the customers table
 database: getpass ## Charges the full database (default target)
 	@./utils/automatic_table.py
 	@./utils/items_table.py
-	@./utils/customers_table.py
-	@./utils/remove_duplicates.py
-	@./utils/fusion.py
+	@./utils/customers_table.py $(KEEP)
+	@./utils/remove_duplicates.py --check $(YES)
+	@./utils/fusion.py $(YES)
 
 .PHONY: getpass
 getpass: ## Creates .env from env_sample.txt once the database password is checked
