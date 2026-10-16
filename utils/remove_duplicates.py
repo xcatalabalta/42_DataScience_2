@@ -98,7 +98,8 @@ def setting(name):
     """
     value = os.environ.get(name)
     if not value:
-        sys.exit(f"ERROR: setting {name} not found (check env_sample.txt / .env).")
+        sys.exit(f"ERROR: setting {name} not found "
+                 "(check env_sample.txt / .env).")
     return value
 
 
@@ -125,8 +126,8 @@ def connect_db():
     Open a connection to the database without storing any password in the
     code. It first tries WITHOUT a password: libpq then uses, if present,
     PGPASSWORD, loaded from the project's .env (written by
-    `make getpass`) or exported by the shell. Only if that first attempt fails does it prompt for
-    the password (no echo) and try once more.
+    `make getpass`) or exported by the shell. Only if that first attempt
+     fails does it prompt for the password (no echo) and try once more.
     Arguments:
         none (reads DB_NAME, DB_USER, DB_HOST and DB_PORT)
     Returns:
@@ -191,7 +192,7 @@ def count_rows(cur, table):
     return cur.fetchone()[0]
 
 
-def lagged_select(table, columns):
+def lagg_select(table, columns):
     """
     Build the inner query that adds, to every row, the event_time of the
     previous row of its group (same values in all the other columns).
@@ -231,7 +232,7 @@ def duplicate_stats(cur, table, columns):
         "AND {t} - prev_time <= {gap}::interval) "
         "FROM ({inner}) AS s;"
     ).format(t=sql.Identifier(TIME_COL), gap=sql.Literal(MAX_GAP),
-             inner=lagged_select(table, columns))
+             inner=lagg_select(table, columns))
     cur.execute(query)
     exact, resend = cur.fetchone()
     return exact, resend
@@ -284,7 +285,7 @@ def split_rows(cur, columns):
         "INSERT INTO {kept} ({cols}) "
         "SELECT {cols} FROM s "
         "WHERE prev_time IS NULL OR {t} - prev_time > {gap}::interval;"
-    ).format(inner=lagged_select(TABLE, columns), dups=sql.Identifier(DUPS_TMP),
+    ).format(inner=lagg_select(TABLE, columns), dups=sql.Identifier(DUPS_TMP),
              kept=sql.Identifier(TMP_TABLE), cols=cols, t=t, gap=gap))
     kept = cur.rowcount
     return kept, count_rows(cur, DUPS_TMP)
