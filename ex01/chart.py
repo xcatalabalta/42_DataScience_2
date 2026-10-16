@@ -117,13 +117,17 @@ START = date(2022, 10, 1)           # first day of the period
 FEB_START = date(2023, 2, 1)        # end of the period with --no-feb
 END = date(2023, 3, 1)              # end of the period (excluded)
 
-# One series per chart, so one colour: the first slot of the validated
-# categorical palette (light mode). Text never wears the series colour.
-SERIES = "#2a78d6"
-SURFACE = "#fcfcfb"                 # chart background
-GRID = "#e4e3df"                    # recessive grid lines
-TEXT_PRIMARY = "#0b0b0b"
-TEXT_SECONDARY = "#52514e"
+# Colours of the subject's reference charts (seaborn "darkgrid" style),
+# sampled from the images of the subject PDF. Text never wears a series
+# colour.
+SURFACE = "#ffffff"                 # figure background, around the plot
+PLOT_BG = "#eaeaf2"                 # plot area: seaborn darkgrid grey
+GRID = "#ffffff"                    # white grid lines over the grey
+LINE = "#4c72b0"                    # customers per day: seaborn "deep" blue
+BAR = "#b6c5d8"                     # monthly sales bars
+AREA = "#b0c4de"                    # average spend area (lightsteelblue)
+TEXT_PRIMARY = "#262626"            # seaborn text colour
+TEXT_SECONDARY = "#555555"          # footer notes
 CURRENCY = "₳"                 # ₳  Altairian Dollar (DejaVu has it)
 
 
@@ -225,8 +229,8 @@ def print_summary(daily, months):
 
 def new_chart(title, ylabel):
     """
-    Create a figure with the common style: light surface, recessive grid
-    behind the data, no box, text in the text colours.
+    Create a figure in the style of the subject's charts (seaborn
+    "darkgrid"): grey plot area, white grid lines behind the data, no box.
     Arguments:
         title:  chart title (str)
         ylabel: y axis label (str)
@@ -234,15 +238,14 @@ def new_chart(title, ylabel):
         tuple (fig, ax)
     """
     fig, ax = plt.subplots(figsize=(8, 4.6), facecolor=SURFACE)
-    ax.set_facecolor(SURFACE)
+    ax.set_facecolor(PLOT_BG)
     ax.set_title(title, color=TEXT_PRIMARY, fontsize=13, loc="left", pad=12)
-    ax.set_ylabel(ylabel, color=TEXT_SECONDARY, fontsize=10)
-    ax.grid(axis="y", color=GRID, linewidth=0.8)
+    ax.set_ylabel(ylabel, color=TEXT_PRIMARY, fontsize=10)
+    ax.grid(axis="y", color=GRID, linewidth=1)
     ax.set_axisbelow(True)
-    for side in ("top", "right", "left"):
-        ax.spines[side].set_visible(False)
-    ax.spines["bottom"].set_color(GRID)
-    ax.tick_params(colors=TEXT_SECONDARY, labelsize=9, length=0)
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+    ax.tick_params(colors=TEXT_PRIMARY, labelsize=9, length=0)
     return fig, ax
 
 
@@ -259,7 +262,7 @@ def month_axis(ax, end):
     ax.set_xlim(START, end - timedelta(days=1))
     ax.xaxis.set_major_locator(mdates.MonthLocator())
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%b"))
-    ax.grid(axis="x", color=GRID, linewidth=0.8)
+    ax.grid(axis="x", color=GRID, linewidth=1)
 
 
 def footer(fig, daily):
@@ -287,7 +290,7 @@ def draw_customers(daily, end):
     fig, ax = new_chart("Customers who bought, per day",
                         "Number of customers")
     ax.plot([r[0] for r in daily], [r[1] for r in daily],
-            color=SERIES, linewidth=2)
+            color=LINE, linewidth=1.2)
     ax.set_ylim(bottom=0)
     month_axis(ax, end)
     footer(fig, daily)
@@ -307,11 +310,11 @@ def draw_sales(months):
                         f"total sales in million of {CURRENCY}")
     names = [f"{m:%b}" for m, *_ in months]
     values = [s / 1e6 for _, _, _, s, _ in months]
-    bars = ax.bar(names, values, width=0.7, color=SERIES,
-                  edgecolor=SURFACE, linewidth=2)
+    bars = ax.bar(names, values, width=0.8, color=BAR,
+                  edgecolor=GRID, linewidth=1)
     ax.bar_label(bars, labels=[f"{v:.2f}" for v in values], padding=4,
                  color=TEXT_PRIMARY, fontsize=9)
-    ax.set_xlabel("month", color=TEXT_SECONDARY, fontsize=10)
+    ax.set_xlabel("month", color=TEXT_PRIMARY, fontsize=10)
     ax.set_ylim(0, max(values) * 1.12)
     fig.text(0.01, 0.01, "Purchases only, refunds included",
              color=TEXT_SECONDARY, fontsize=8)
@@ -331,8 +334,7 @@ def draw_spend(daily, end):
                         f"average spend/customers in {CURRENCY}")
     days = [r[0] for r in daily]
     spend = [r[3] / r[1] for r in daily]
-    ax.fill_between(days, spend, color=SERIES, alpha=0.25, linewidth=0)
-    ax.plot(days, spend, color=SERIES, linewidth=2)
+    ax.fill_between(days, spend, color=AREA, linewidth=0)
     ax.set_ylim(bottom=0)
     month_axis(ax, end)
     footer(fig, daily)
