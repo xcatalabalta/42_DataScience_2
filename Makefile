@@ -49,6 +49,11 @@ ex03: ## Combine the customers tables with items in the customers table
 	@chmod +x ex03/Building.py
 	@./ex03/Building.py
 
+.PHONY: ex04
+ex03: ## Generate elbow chart
+	@chmod +x ex04/elbow.py
+	@./ex04/elbow.py
+
 .PHONY: database
 database: getpass ## Charges the full database (default target)
 	@./utils/automatic_table.py
