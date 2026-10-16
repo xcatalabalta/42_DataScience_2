@@ -29,15 +29,15 @@ YES  := $(if $(AUTO),--yes)
 KEEP := $(if $(AUTO),--keep)
 
 .PHONY: ex00
-ex00: ## Regenerates the project from scratch ready to inspect
+ex00: ## Create a pie chart according to the subject
 	@echo "Generating pie chart"
 	@chmod +x ex00/pie.py
 	@./ex00/pie.py
 
 .PHONY: ex01
 ex01: ## Join all the data_202*_*** tables together in a table called "customers"
-	@chmod +x ex01/customers_table.py
-	@./ex01/customers_table.py $(KEEP)
+	@chmod +x ex01/chart.py
+	@./ex01/chart.py
 
 .PHONY: ex02
 ex02: ## Removes duplicates
@@ -94,10 +94,6 @@ fclean: clean delpass ## Drops all the tables and deletes .env (before an evalua
 .PHONY: help
 help: ## Show this help menu
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z0-9_-]+:.*?## / {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
-
-.PHONY: inspect
-inspect: ## Runs inspect SQL instructions for the items table
-	psql -h /run/postgresql -U $(PGUSER) -d $(PGDATABASE) -f utils/inspect_items.sql
 
 .PHONY: re
 re: clean database ## Drops all the tables and recreates the database
