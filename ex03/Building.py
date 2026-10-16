@@ -53,6 +53,7 @@ import matplotlib
 if not os.environ.get("DISPLAY"):
     matplotlib.use("Agg")           # no display (SSH, cron): file only
 import matplotlib.pyplot as plt     # noqa: E402  (backend must be set first)
+from matplotlib.ticker import MultipleLocator   # noqa: E402
 
 
 def load_env():
@@ -120,6 +121,7 @@ END = date(2023, 3, 1)              # end of the period (excluded)
 
 BINS = 5                            # bars per chart, as in the reference
 FREQ_RANGE = (1, 38)                # orders shown (reference x axis)
+FREQ_TICK = 10                      # one x value every 10 orders
 # ₳ shown: 5 bars of 50 ₳ centred on 0, 50, ..., 200 (reference x axis)
 MONEY_RANGE = (-25, 225)
 
@@ -270,8 +272,9 @@ def style(ax, xlabel):
 
 def draw(frequency, monetary, full, title_note):
     """
-    Draw both histograms side by side in one figure. On the monetary
-    chart the x values are written under the centre of each bar.
+    Draw both histograms side by side in one figure. Frequency chart:
+    x values every FREQ_TICK orders, on the usual scale. Monetary chart:
+    x values written under the centre of each bar.
     Arguments:
         frequency:  orders per customer drawn (numpy array)
         monetary:   ₳ per customer drawn (numpy array)
@@ -286,6 +289,8 @@ def draw(frequency, monetary, full, title_note):
     left.hist(frequency, bins=bin_edges(frequency, FREQ_RANGE, full),
               **bars)
     style(left, "frequency")
+    if not full:                        # 0, 10, 20, 30 as in the reference
+        left.xaxis.set_major_locator(MultipleLocator(FREQ_TICK))
     left.set_title("Orders per customer", color=TEXT_PRIMARY,
                    fontsize=12, loc="left")
     edges = bin_edges(monetary, MONEY_RANGE, full)
