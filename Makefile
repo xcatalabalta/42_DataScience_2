@@ -35,14 +35,14 @@ ex00: ## Create a pie chart according to the subject
 	@./ex00/pie.py
 
 .PHONY: ex01
-ex01: ## Join all the data_202*_*** tables together in a table called "customers"
+ex01: ## Create the charts of ex01: customers by day, sales by month, average customer expenditure by day
 	@chmod +x ex01/chart.py
 	@./ex01/chart.py
 
 .PHONY: ex02
-ex02: ## Removes duplicates
-	@chmod +x ex02/remove_duplicates.py
-	@./ex02/remove_duplicates.py --check $(YES)
+ex02: ## Generate the box plots of ex02
+	@chmod +x ex02/mustache.py
+	@./ex02/mustache.py
 
 .PHONY: ex03
 ex03: ## Combine the customers tables with items in the customers table
