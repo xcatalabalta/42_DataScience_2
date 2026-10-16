@@ -39,7 +39,7 @@ import psycopg2
 
 import matplotlib
 if not os.environ.get("DISPLAY"):
-    matplotlib.use("Agg")           # no display (SSH, cron): render to file only
+    matplotlib.use("Agg")           # no display (SSH, cron): file only
 import matplotlib.pyplot as plt     # noqa: E402  (backend must be set first)
 
 
@@ -88,7 +88,8 @@ def setting(name):
     """
     value = os.environ.get(name)
     if not value:
-        sys.exit(f"ERROR: setting {name} not found (check env_sample.txt / .env).")
+        sys.exit(f"ERROR: setting {name} not found "
+                 "(check env_sample.txt / .env).")
     return value
 
 
@@ -122,8 +123,8 @@ def connect_db():
     Open a connection to the database without storing any password in the
     code. It first tries WITHOUT a password: libpq then uses, if present,
     PGPASSWORD, loaded from the project's .env (written by
-    `make getpass`) or exported by the shell. Only if that first attempt fails does it prompt for
-    the password (no echo) and try once more.
+    `make getpass`) or exported by the shell. Only if that first attempt
+    fails does it prompt for the password (no echo) and try once more.
     Arguments:
         none (reads DB_NAME, DB_USER, DB_HOST and DB_PORT)
     Returns:
