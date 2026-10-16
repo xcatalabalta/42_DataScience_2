@@ -46,8 +46,8 @@ ex02: ## Generate the box plots of ex02
 
 .PHONY: ex03
 ex03: ## Combine the customers tables with items in the customers table
-	@chmod +x ex03/fusion.py
-	@./ex03/fusion.py $(YES)
+	@chmod +x ex03/Building.py
+	@./ex03/Building.py
 
 .PHONY: database
 database: getpass ## Charges the full database (default target)
