@@ -20,10 +20,8 @@ Range shown:
   hold almost everyone. Like the subject's reference charts, only the
   customers inside FREQ_RANGE and MONEY_RANGE are drawn (the ranges read
   on the reference axes). The terminal tells how many are left out, and
-  --full draws everyone. Each chart has 5 bars of equal width spanning
-  its range. The monetary bars are 50 ₳ wide and centred on 0, 50, 100,
-  150 and 200 ₳, with the x values under the centre of each bar, as in
-  the reference.
+  --full draws everyone. Each chart has 5 bars of equal width between
+  the smallest and largest value drawn, as in the reference.
 
 Options:
   --no-feb    leave out February 2023, to compare with the reference
@@ -122,8 +120,7 @@ END = date(2023, 3, 1)              # end of the period (excluded)
 BINS = 5                            # bars per chart, as in the reference
 FREQ_RANGE = (1, 38)                # orders shown (reference x axis)
 FREQ_TICK = 10                      # one x value every 10 orders
-# ₳ shown: 5 bars of 50 ₳ centred on 0, 50, ..., 200 (reference x axis)
-MONEY_RANGE = (-25, 225)
+MONEY_RANGE = (-30, 230)            # ₳ shown (reference x axis)
 
 # Colours of the subject's reference charts (seaborn "darkgrid" style),
 # sampled from the image of the subject PDF.
@@ -208,22 +205,6 @@ def in_range(values, limits, full):
     return values[(values >= low) & (values <= high)]
 
 
-def bin_edges(kept, limits, full):
-    """
-    Edges of the BINS bars of one chart: the range shown split in equal
-    parts, or, with --full, the smallest to the largest value.
-    Arguments:
-        kept:   the customers drawn (numpy array)
-        limits: (low, high) range shown (tuple)
-        full:   no range applied (bool)
-    Returns:
-        BINS + 1 edges, in increasing order (numpy array of float)
-    """
-    if full:
-        return np.histogram_bin_edges(kept, bins=BINS)
-    return np.linspace(limits[0], limits[1], BINS + 1)
-
-
 def print_bins(name, unit, values, kept, limits, full):
     """
     Print the bars of one chart (range and customers) and how many
@@ -242,7 +223,7 @@ def print_bins(name, unit, values, kept, limits, full):
     print(f"\n{name} ({unit}), range shown: {shown}")
     print(f"  customers: {values.size:,}  min {values.min():,.2f}  "
           f"median {np.median(values):,.2f}  max {values.max():,.2f}")
-    counts, edges = np.histogram(kept, bins=bin_edges(kept, limits, full))
+    counts, edges = np.histogram(kept, bins=BINS)
     for n, low, high in zip(counts, edges[:-1], edges[1:]):
         print(f"  {low:>10,.2f} to {high:>10,.2f}  {n:>10,}")
     left_out = values.size - kept.size
@@ -272,9 +253,8 @@ def style(ax, xlabel):
 
 def draw(frequency, monetary, full, title_note):
     """
-    Draw both histograms side by side in one figure. Frequency chart:
-    x values every FREQ_TICK orders, on the usual scale. Monetary chart:
-    x values written under the centre of each bar.
+    Draw both histograms side by side in one figure; the frequency
+    chart has one x value every FREQ_TICK orders.
     Arguments:
         frequency:  orders per customer drawn (numpy array)
         monetary:   ₳ per customer drawn (numpy array)
@@ -285,18 +265,14 @@ def draw(frequency, monetary, full, title_note):
     """
     fig, (left, right) = plt.subplots(1, 2, figsize=(11, 4.4),
                                       facecolor=SURFACE)
-    bars = {"color": BAR, "edgecolor": GRID, "linewidth": 1}
-    left.hist(frequency, bins=bin_edges(frequency, FREQ_RANGE, full),
-              **bars)
+    bars = {"bins": BINS, "color": BAR, "edgecolor": GRID, "linewidth": 1}
+    left.hist(frequency, **bars)
     style(left, "frequency")
     if not full:                        # 0, 10, 20, 30 as in the reference
         left.xaxis.set_major_locator(MultipleLocator(FREQ_TICK))
     left.set_title("Orders per customer", color=TEXT_PRIMARY,
                    fontsize=12, loc="left")
-    edges = bin_edges(monetary, MONEY_RANGE, full)
-    right.hist(monetary, bins=edges, **bars)
-    centres = (edges[:-1] + edges[1:]) / 2
-    right.set_xticks(centres, [f"{c:,.0f}" for c in centres])
+    right.hist(monetary, **bars)
     style(right, f"monetary value in {CURRENCY}")
     right.set_title("Altairian Dollars spent per customer",
                     color=TEXT_PRIMARY, fontsize=12, loc="left")
