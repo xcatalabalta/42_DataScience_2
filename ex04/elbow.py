@@ -124,7 +124,7 @@ FEB_START = date(2023, 2, 1)        # end of the period with --no-feb
 END = date(2023, 3, 1)              # end of the period (excluded)
 
 K_MAX = 10                          # k = 1 .. K_MAX, as in the reference
-N_INIT = 3                          # k-means runs per k, best one kept
+N_INIT = 10                         # k-means runs per k, best one kept
 MAX_ITER = 100                      # Lloyd iterations per run
 SEED = 42                           # fixed: same result at every run
 
@@ -224,9 +224,12 @@ def sq_distances(points, centres):
 
 def kmeans_pp(points, k, rng):
     """
-    k-means++ start: the first centre is a random point; each next one is
-    drawn with a probability proportional to its squared distance to the
-    nearest centre already chosen, so the centres start well spread.
+    Greedy k-means++ start (as in scikit-learn): the first centre is a
+    random point; for each next one, 2 + log(k) candidates are drawn with
+    a probability proportional to their squared distance to the nearest
+    centre already chosen, and the candidate that lowers the total
+    distance the most is kept. The centres start well spread, which
+    avoids poor local minima.
     Arguments:
         points: array of shape (n, d) (numpy array of float)
         k:      number of centres (int)
@@ -234,17 +237,21 @@ def kmeans_pp(points, k, rng):
     Returns:
         array of shape (k, d) (numpy array of float)
     """
+    tries = 2 + int(np.log(k))
     centres = [points[rng.integers(len(points))]]
     nearest = sq_distances(points, np.array(centres))[:, 0]
     for _ in range(1, k):
         total = nearest.sum()
         if total == 0:                  # fewer distinct points than k
-            idx = rng.integers(len(points))
+            candidates = rng.integers(len(points), size=tries)
         else:
-            idx = rng.choice(len(points), p=nearest / total)
-        centres.append(points[idx])
-        nearest = np.minimum(nearest,
-                             sq_distances(points, points[idx][None])[:, 0])
+            candidates = rng.choice(len(points), size=tries,
+                                    p=nearest / total)
+        options = np.minimum(nearest[:, None],
+                             sq_distances(points, points[candidates]))
+        best = int(options.sum(axis=0).argmin())
+        centres.append(points[candidates[best]])
+        nearest = options[:, best]
     return np.array(centres)
 
 
