@@ -50,7 +50,7 @@ ex03: ## Combine the customers tables with items in the customers table
 	@./ex03/Building.py
 
 .PHONY: ex04
-ex03: ## Generate elbow chart
+ex04: ## Generate elbow chart
 	@chmod +x ex04/elbow.py
 	@./ex04/elbow.py
 
